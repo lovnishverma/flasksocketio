@@ -8,14 +8,14 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'kartik_super_secret_key'
+app.config['SECRET_KEY'] = 'lovnish_super_secret_key'
 
 socketio = SocketIO(app, async_mode='gevent')
 
 # Connect to MongoDB Atlas
 MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-db = client['kartikdarkchatDB']
+db = client['lovnishdarkchatDB']
 messages_collection = db['messages']
 
 IST = pytz.timezone('Asia/Kolkata')
@@ -41,7 +41,7 @@ def handle_connect():
                         msg['timestamp'] = pytz.utc.localize(msg['timestamp'])
 
                     ist_time = msg['timestamp'].astimezone(IST)
-                    msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M %p")  # Requested format
+                    msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M %p")  # Desired date time format
                 except Exception as e:
                     print("Error parsing timestamp:", e)
                     msg['timestamp'] = "Unknown"
