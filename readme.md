@@ -18,8 +18,8 @@ A real-time chat application built with Flask, Flask-SocketIO, and MongoDB. User
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/lovnishverma/flask-chat-app.git
-cd flask-chat-app
+git clone https://github.com/lovnishverma/flasksocketio.git
+cd flasksocketio
 ```
 
 ### 2. Create a Virtual Environment (Optional but Recommended)
