@@ -1,6 +1,5 @@
 Flask==3.0.3
 Flask-SocketIO==5.3.6
-eventlet==0.35.1
 gevent==24.2.1
 gevent-websocket==0.10.1
 pymongo==4.6.3
