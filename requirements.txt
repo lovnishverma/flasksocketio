@@ -1,6 +1,7 @@
 Flask==3.0.3
 Flask-SocketIO==5.3.6
 eventlet==0.35.1
-pymongo==4.6.3
 gunicorn==21.2.0
 pytz
+pymongo==4.5.0
+dnspython==2.4.2
