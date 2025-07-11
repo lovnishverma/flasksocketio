@@ -1,7 +1,9 @@
 services:
   - type: web
-    name: flasksocketio
+    name: flask-chat-app
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
-    runtime: python-3.11
+    startCommand: python app.py
+    envVars:
+      - key: MONGO_URI
+        value: "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/?retryWrites=true&w=majority"
