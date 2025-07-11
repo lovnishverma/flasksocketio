@@ -1,9 +1,7 @@
 services:
   - type: web
-    name: flask-chat-app
-    runtime: python
-    buildCommand: ""
-    startCommand: gunicorn app:app --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -b 0.0.0.0:10000
-    envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.9
+    name: your-app-name
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    runtime: python-3.11
