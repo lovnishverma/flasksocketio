@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: your-app-name
+    name: flasksocketio
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
