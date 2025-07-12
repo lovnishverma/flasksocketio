@@ -36,8 +36,15 @@ def handle_message(msg):
         'timestamp': timestamp
     }
     
-    messages.insert_one(chat_message)
+    # Insert into DB
+    result = messages.insert_one(chat_message)
+
+    # Remove `_id` field added by MongoDB before broadcasting
+    chat_message.pop('_id', None)
+
+    # Broadcast to all clients
     send(chat_message, broadcast=True)
+
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
