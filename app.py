@@ -7,7 +7,8 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+# Explicitly set async_mode to 'gevent'
+socketio = SocketIO(app, async_mode='gevent')
 
 # MongoDB Atlas URI
 MONGO_URI = os.environ.get('MONGO_URI')  # will set from Render Dashboard
