@@ -2,8 +2,8 @@ services:
   - type: web
     name: flask-chat-app
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    buildCommand: ""
+    startCommand: "gunicorn app:app --worker-class geventwebsocket.gunicorn.workers.GeventWebSocketWorker -w 1 -b 0.0.0.0:10000"
     envVars:
       - key: MONGO_URI
-        value: "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/?retryWrites=true&w=majority"
+        value: YOUR_MONGODB_ATLAS_URI
