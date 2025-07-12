@@ -4,19 +4,24 @@ from pymongo import MongoClient
 from datetime import datetime
 import pytz
 import os
+import eventlet
+
+# ✅ Monkey patching for eventlet
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-# Explicitly set async_mode to 'gevent'
-socketio = SocketIO(app, async_mode='gevent')
 
-# MongoDB Atlas URI
-MONGO_URI = os.environ.get('MONGO_URI')  # will set from Render Dashboard
+# ✅ Initialize SocketIO with eventlet
+socketio = SocketIO(app, async_mode='eventlet')
+
+# ✅ MongoDB Atlas URI from environment
+MONGO_URI = os.environ.get('MONGO_URI')  # Set this in Render Dashboard
 client = MongoClient(MONGO_URI)
 db = client['chat_db']
 messages = db['messages']
 
-# IST Timezone
+# ✅ IST Timezone
 tz = pytz.timezone('Asia/Kolkata')
 
 @app.route('/')
@@ -26,25 +31,25 @@ def index():
 
 @socketio.on('message')
 def handle_message(msg):
-    nickname = msg['nickname']
-    message_text = msg['message']
+    nickname = msg.get('nickname')
+    message_text = msg.get('message')
     timestamp = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
-    
+
     chat_message = {
         'nickname': nickname,
         'message': message_text,
         'timestamp': timestamp
     }
-    
-    # Insert into DB
-    result = messages.insert_one(chat_message)
 
-    # Remove `_id` field added by MongoDB before broadcasting
+    # ✅ Insert into MongoDB
+    messages.insert_one(chat_message)
+
+    # ✅ Remove MongoDB's _id field before sending
     chat_message.pop('_id', None)
 
-    # Broadcast to all clients
+    # ✅ Broadcast to all connected clients
     send(chat_message, broadcast=True)
 
-
 if __name__ == '__main__':
+    # ✅ Use eventlet WSGI server (REQUIRED for WebSocket support)
     socketio.run(app, host='0.0.0.0', port=5000)
