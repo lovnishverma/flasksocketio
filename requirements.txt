@@ -3,4 +3,3 @@ flask-socketio
 eventlet
 pymongo
 pytz
-gunicorn
