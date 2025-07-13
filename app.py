@@ -10,7 +10,8 @@ gevent.monkey.patch_all()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'lovnish_super_secret_key'
 
-socketio = SocketIO(app, async_mode='gevent')
+socketio = SocketIO(app, async_mode='gevent', cors_allowed_origins='*')
+
 
 # Connect to MongoDB Atlas
 MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
