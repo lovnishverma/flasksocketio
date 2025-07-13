@@ -1,7 +1,38 @@
 body {
-    font-family: 'Segoe UI', sans-serif;
-}
-#messages {
-    max-height: 400px;
-    overflow-y: scroll;
-}
+            margin: 0;
+            font-family: Arial, sans-serif;
+            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        #background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }
+        #chat-container {
+            max-width: 600px;
+            margin: 5% auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: white;
+            color: black;
+        }
+        .theme-light #chat-container {
+            background: rgba(255, 255, 255, 0.9);
+            color: black;
+        }
+        .theme-light #messages {
+            background: black;
+            color: white;
+        }

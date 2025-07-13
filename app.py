@@ -1,110 +1,76 @@
-# ✅ Must be FIRST
-import eventlet
-eventlet.monkey_patch()
-
-# ✅ All other imports come AFTER monkey patching
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO, send
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
 from pymongo import MongoClient
 from datetime import datetime
 import pytz
-import os
+import gevent
+import gevent.monkey
+gevent.monkey.patch_all()
 
-# Flask app setup
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = 'lovnish_super_secret_key'
 
-# ✅ SocketIO with eventlet async mode
-socketio = SocketIO(app, async_mode='eventlet')
+socketio = SocketIO(app, async_mode='gevent')
 
-# ✅ MongoDB setup
-MONGO_URI = os.environ.get('MONGO_URI')  # Set on Render
-client = MongoClient(MONGO_URI)
-db = client['chat_db']
-messages = db['messages']
+# Connect to MongoDB Atlas
+MONGO_URI = "mongodb+srv://test:test@cluster0.sxci1.mongodb.net/chatDB?retryWrites=true&w=majority"
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+db = client['lovnishdarkchatDB']
+messages_collection = db['messages']
 
-# ✅ IST timezone
-tz = pytz.timezone('Asia/Kolkata')
+IST = pytz.timezone('Asia/Kolkata')
 
 @app.route('/')
 def index():
-    all_messages = list(messages.find({}, {'_id': 0}))
-    return render_template('index.html', messages=all_messages)
+    return render_template('index.html')
+
+@socketio.on('connect')
+def handle_connect():
+    """Send past messages when a user connects."""
+    try:
+        past_messages = list(messages_collection.find({}))
+        for msg in past_messages:
+            msg['_id'] = str(msg['_id'])  # Convert ObjectId to string
+
+            if 'timestamp' in msg:
+                try:
+                    if isinstance(msg['timestamp'], str):
+                        msg['timestamp'] = datetime.strptime(msg['timestamp'], '%Y-%m-%d %H:%M:%S')
+                    
+                    if msg['timestamp'].tzinfo is None:
+                        msg['timestamp'] = pytz.utc.localize(msg['timestamp'])
+
+                    ist_time = msg['timestamp'].astimezone(IST)
+                    msg['timestamp'] = ist_time.strftime("%d-%m-%Y %I:%M %p")  # Desired date time format
+                except Exception as e:
+                    print("Error parsing timestamp:", e)
+                    msg['timestamp'] = "Unknown"
+
+        emit('load_messages', past_messages)
+    except Exception as e:
+        print("MongoDB Connection Error:", e)
 
 @socketio.on('message')
-def handle_message(msg):
-    nickname = msg.get('nickname')
-    message_text = msg.get('message')
-    timestamp = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
+def handle_message(data):
+    """Store messages with nickname in MongoDB and broadcast."""
+    nickname = data.get('nickname', 'Anonymous')
+    message_text = data.get('message', '')
+    
+    utc_now = datetime.utcnow()
+    utc_now = pytz.utc.localize(utc_now)
+    ist_now = utc_now.astimezone(IST)
 
-    chat_message = {
+    message_doc = {
         'nickname': nickname,
         'message': message_text,
-        'timestamp': timestamp
+        'timestamp': utc_now  # Store in UTC
     }
+    inserted_doc = messages_collection.insert_one(message_doc)
 
-    # Insert into MongoDB
-    messages.insert_one(chat_message)
-    chat_message.pop('_id', None)
+    message_doc['_id'] = str(inserted_doc.inserted_id)
+    message_doc['timestamp'] = ist_now.strftime("%d-%m-%Y %I:%M %p")
 
-    # Broadcast to all clients
-    send(chat_message, broadcast=True)
+    emit('message', message_doc, broadcast=True)
 
 if __name__ == '__main__':
-    # ✅ Run with eventlet
-    socketio.run(app, host='0.0.0.0', port=5000)
-# ✅ Must be FIRST
-import eventlet
-eventlet.monkey_patch()
-
-# ✅ All other imports come AFTER monkey patching
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO, send
-from pymongo import MongoClient
-from datetime import datetime
-import pytz
-import os
-
-# Flask app setup
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-
-# ✅ SocketIO with eventlet async mode
-socketio = SocketIO(app, async_mode='eventlet')
-
-# ✅ MongoDB setup
-MONGO_URI = os.environ.get('MONGO_URI')  # Set on Render
-client = MongoClient(MONGO_URI)
-db = client['chat_db']
-messages = db['messages']
-
-# ✅ IST timezone
-tz = pytz.timezone('Asia/Kolkata')
-
-@app.route('/')
-def index():
-    all_messages = list(messages.find({}, {'_id': 0}))
-    return render_template('index.html', messages=all_messages)
-
-@socketio.on('message')
-def handle_message(msg):
-    nickname = msg.get('nickname')
-    message_text = msg.get('message')
-    timestamp = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
-
-    chat_message = {
-        'nickname': nickname,
-        'message': message_text,
-        'timestamp': timestamp
-    }
-
-    # Insert into MongoDB
-    messages.insert_one(chat_message)
-    chat_message.pop('_id', None)
-
-    # Broadcast to all clients
-    send(chat_message, broadcast=True)
-
-if __name__ == '__main__':
-    # ✅ Run with eventlet
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)

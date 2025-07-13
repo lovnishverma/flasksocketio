@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: flask-chat-app
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
-    envVars:
-      - key: MONGO_URI
-        sync: false  # Set this in the Render dashboard securely
