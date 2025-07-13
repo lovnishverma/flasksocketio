@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-      wget ca-certificates build-essential python2.7 python2.7-dev \
+      wget ca-certificates netbase \
+      build-essential python2.7 python2.7-dev \
       libssl-dev libffi-dev zlib1g-dev && \
     rm -rf /var/lib/apt/lists/*
 
