@@ -1,6 +1,16 @@
         var socket = io.connect(location.protocol + "//" + document.domain + ":" + location.port, {
             transports: ['websocket', 'polling']
         });
+socket.on('connect', () => {
+    console.log('✅ Connected to Socket.IO server');
+});
+socket.on('connect_error', (err) => {
+    console.error('❌ Connection error:', err);
+});
+socket.on('disconnect', () => {
+    console.warn('⚠️ Disconnected from server');
+});
+
 
         function getNickname() {
             return localStorage.getItem("nickname") || "Anonymous";
